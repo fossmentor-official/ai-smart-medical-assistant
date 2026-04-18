@@ -1,102 +1,70 @@
 @import "tw-animate-css";
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
-/* =========================
-   BASE THEME (SHADCN SAFE)
-========================= */
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 214 30% 97%;
     --foreground: 222 47% 11%;
-
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-
-    --primary: 222 84% 5%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96%;
+    --primary: 217 91% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 94%;
     --secondary-foreground: 222 47% 11%;
-
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-
-    --accent: 210 40% 96%;
+    --muted: 210 40% 94%;
+    --muted-foreground: 215 20% 48%;
+    --accent: 210 40% 94%;
     --accent-foreground: 222 47% 11%;
-
     --destructive: 0 84% 60%;
-
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 222 84% 5%;
-
+    --border: 214 32% 88%;
+    --input: 214 32% 88%;
+    --ring: 217 91% 50%;
     --radius: 0.75rem;
+    --sidebar-bg: 222 47% 11%;
+    --sidebar-fg: 210 40% 85%;
   }
 
-  .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground font-sans antialiased; }
+  html { font-family: 'Geist Variable', sans-serif; }
+}
 
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
+@layer utilities {
+  .font-display { font-family: 'Syne', sans-serif; }
 
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222 47% 11%;
-
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 63% 31%;
-
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 212 100% 50%;
+  .clinical-card {
+    @apply bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden;
+  }
+  .tag-blue {
+    @apply bg-blue-50 text-blue-700 border border-blue-200 text-xs px-2.5 py-1 rounded-md font-medium;
+  }
+  .tag-green {
+    @apply bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs px-2.5 py-1 rounded-md font-medium;
+  }
+  .tag-amber {
+    @apply bg-amber-50 text-amber-700 border border-amber-200 text-xs px-2.5 py-1 rounded-md font-medium;
+  }
+  .tag-red {
+    @apply bg-red-50 text-red-700 border border-red-200 text-xs px-2.5 py-1 rounded-md font-medium;
+  }
+  .soap-cell {
+    @apply bg-slate-50 rounded-xl p-3 border border-slate-100;
   }
 
-  * {
-    @apply border-border outline-ring/50;
-  }
-
-  body {
-    @apply bg-background text-foreground font-sans;
-  }
-
-  html {
-    font-family: 'Geist Variable', sans-serif;
-  }
-  .animate-fade-in {
-    animation: fadeIn 0.25s ease-out;
-  }
-  
-  .animate-slide-up {
-    animation: slideUp 0.3s ease-out;
-  }
-  
   @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .animate-slide-up { animation: slideUp 0.3s ease-out; }
+  .animate-fade-in  { animation: fadeIn 0.25s ease-out; }
 }
