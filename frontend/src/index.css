@@ -6,6 +6,11 @@
 @tailwind utilities;
 
 @layer base {
+  /* Prevent SidebarInset from ever going under the fixed sidebar */
+  [data-sidebar="inset"] {
+    min-width: 0;
+    overflow: hidden;
+  }
   :root {
     --background: 214 30% 97%;
     --foreground: 222 47% 11%;

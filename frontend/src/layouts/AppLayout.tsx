@@ -12,16 +12,15 @@ interface Props {
 export default function AppLayout({ children, activeMode, onModeChange, onDemoCase }: Props) {
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full overflow-hidden bg-slate-50">
-        <AppSidebar
-          activeMode={activeMode}
-          onModeChange={onModeChange}
-          onDemoCase={onDemoCase}
-        />
-        <SidebarInset className="flex flex-1 min-w-0 flex-col overflow-hidden">
-          {children}
-        </SidebarInset>
-      </div>
+      {/* SidebarProvider renders as a flex row — Sidebar + SidebarInset sit directly inside it */}
+      <AppSidebar
+        activeMode={activeMode}
+        onModeChange={onModeChange}
+        onDemoCase={onDemoCase}
+      />
+      <SidebarInset className="flex flex-col h-svh overflow-hidden bg-slate-50">
+        {children}
+      </SidebarInset>
     </SidebarProvider>
   )
 }

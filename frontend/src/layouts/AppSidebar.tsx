@@ -24,7 +24,7 @@ const modeText: Record<string, string> = {
 
 export default function AppSidebar({ activeMode, onModeChange, onDemoCase }: Props) {
   return (
-    <Sidebar className="w-64 shrink-0 border-r border-white/10 bg-[#0d1625] text-slate-300">
+    <Sidebar className="border-r border-white/10 bg-[#0d1625] text-slate-300">
       <SidebarContent className="flex flex-col h-full overflow-y-auto px-0 py-0">
 
         {/* Logo */}
