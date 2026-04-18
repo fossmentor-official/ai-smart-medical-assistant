@@ -1,32 +1,48 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-import time
-from gemini_service import ask_gemini
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from fastapi.responses import JSONResponse
+from models import ChatRequest
+from gemini_service import ask_gemini_stream
+from config import ALLOWED_ORIGINS
+import json
 
-app = FastAPI()
+limiter = Limiter(key_func=get_remote_address)
+app = FastAPI(title="TotalCura AI API")
+app.state.limiter = limiter
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,   # ← env-based, not ["*"]
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-class ChatRequest(BaseModel):
-    message: str
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request, exc):
+    return JSONResponse(status_code=429, content={"error": "Too many requests. Please wait."})
 
-def stream_generator(text: str):
-    for word in text.split():
-        yield word + " "
-        time.sleep(0.03)  # simulate streaming
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": "TotalCura AI"}
 
 @app.post("/api/chat")
-def chat(req: ChatRequest):
-    full_response = ask_gemini(req.message)
+@limiter.limit("15/minute")
+async def chat(request: Request, req: ChatRequest):
+    async def event_stream():
+        try:
+            async for chunk in ask_gemini_stream(req.message, req.mode):
+                yield f"data: {json.dumps({'text': chunk})}\n\n"
+            yield "data: [DONE]\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
     return StreamingResponse(
-        stream_generator(full_response),
-        media_type="text/plain"
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
     )

@@ -1,47 +1,47 @@
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect, useRef } from "react"
 import { streamMessage } from "../lib/api"
 import MessageBubble from "./MessageBubble"
+import TypingIndicator from "./TypingIndicator"
+import type { Message, Mode } from "../types/clinical"
 
 export default function ChatBox() {
-  const [messages, setMessages] = useState<any[]>([])
+  const [messages, setMessages] = useState<Message[]>([])
   const [text, setText] = useState("")
   const [loading, setLoading] = useState(false)
+  const [mode, setMode] = useState<Mode>("clinical")   // ← add mode state
+  const bottomRef = useRef<HTMLDivElement>(null)
 
-  const bottomRef = useRef<HTMLDivElement | null>(null)
-
-  // ✅ Auto-scroll
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
   const handleSend = async () => {
-    if (!text.trim()) return
-
-    const userMsg = { role: "user", text }
-    const aiMsg = { role: "ai", text: "" }
-
+    if (!text.trim() || loading) return
+    const userMsg: Message = { role: "user", text, mode }
+    const aiMsg: Message = { role: "ai", text: "", mode }
     setMessages((prev) => [...prev, userMsg, aiMsg])
     setText("")
     setLoading(true)
-
     let accumulated = ""
-
-    await streamMessage(text, (chunk) => {
-      accumulated += chunk
-
+    try {
+      await streamMessage(text, mode, (chunk) => {
+        accumulated += chunk
+        setMessages((prev) => {
+          const updated = [...prev]
+          updated[updated.length - 1] = { role: "ai", text: accumulated, mode }
+          return updated
+        })
+      })
+    } catch (err) {
       setMessages((prev) => {
         const updated = [...prev]
-        updated[updated.length - 1] = {
-          role: "ai",
-          text: accumulated,
-        }
+        updated[updated.length - 1] = { role: "ai", text: "Error connecting to AI. Please try again.", mode }
         return updated
       })
-    })
-
-    setLoading(false)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
