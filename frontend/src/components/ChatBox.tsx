@@ -83,7 +83,7 @@ export default function ChatBox({ mode, pendingPrompt, onPendingClear }: Props) 
   }
 
   return (
-    <div className="flex flex-col h-full bg-slate-50">
+    <div className="flex flex-col bg-slate-50" style={{ height: "100vh" }}>
 
       {/* Mode header */}
       <div className="flex items-center justify-between px-6 py-3.5 bg-white border-b border-slate-200 flex-shrink-0">
