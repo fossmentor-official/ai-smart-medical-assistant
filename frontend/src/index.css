@@ -5,6 +5,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Voice EMR waveform animation ── */
+@keyframes waveBar {
+  from { transform: scaleY(0.3); opacity: 0.6; }
+  to   { transform: scaleY(1);   opacity: 1;   }
+}
+
 @layer base {
   /* Prevent SidebarInset from ever going under the fixed sidebar */
   [data-sidebar="inset"] {

@@ -38,3 +38,15 @@ export async function streamMessage(
     }
   }
 }
+
+export async function generateEMR(transcript: string) {
+  const res = await fetch(`${API_URL}/voice-to-emr`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ transcript }),
+  });
+
+  return res.json();
+}

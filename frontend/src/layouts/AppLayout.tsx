@@ -1,3 +1,4 @@
+// frontend/src/layouts/AppLayout.tsx
 import AppSidebar from "./AppSidebar"
 import type { Mode } from "../types/clinical"
 
@@ -6,9 +7,10 @@ interface Props {
   activeMode: Mode
   onModeChange: (m: Mode) => void
   onDemoCase: (prompt: string, mode: Mode) => void
+  onVoiceEMR: () => void
 }
 
-export default function AppLayout({ children, activeMode, onModeChange, onDemoCase }: Props) {
+export default function AppLayout({ children, activeMode, onModeChange, onDemoCase, onVoiceEMR }: Props) {
   return (
     <div
       style={{
@@ -37,6 +39,7 @@ export default function AppLayout({ children, activeMode, onModeChange, onDemoCa
           activeMode={activeMode}
           onModeChange={onModeChange}
           onDemoCase={onDemoCase}
+          onVoiceEMR={onVoiceEMR}
         />
       </div>
 

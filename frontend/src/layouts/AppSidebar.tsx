@@ -5,6 +5,7 @@ interface Props {
   activeMode: Mode
   onModeChange: (m: Mode) => void
   onDemoCase: (prompt: string, mode: Mode) => void
+  onVoiceEMR: () => void
 }
 
 const modeRing: Record<string, string> = {
@@ -20,7 +21,7 @@ const modeText: Record<string, string> = {
   purple:  "text-purple-300",
 }
 
-export default function AppSidebar({ activeMode, onModeChange, onDemoCase }: Props) {
+export default function AppSidebar({ activeMode, onModeChange, onDemoCase, onVoiceEMR }: Props) {
   return (
     <div
       style={{ display: "flex", flexDirection: "column", height: "100vh" }}
@@ -105,6 +106,25 @@ export default function AppSidebar({ activeMode, onModeChange, onDemoCase }: Pro
         </div>
       </div>
 
+      {/* Voice EMR CTA */}
+      <div className="px-3 pb-3 flex-shrink-0">
+        <button
+          onClick={onVoiceEMR}
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 hover:border-cyan-500/60 hover:from-cyan-500/30 hover:to-blue-600/30 transition-all group"
+        >
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-md shadow-cyan-500/30">
+            <span className="text-base">🎤</span>
+          </div>
+          <div className="text-left min-w-0">
+            <div className="text-[12px] font-bold text-cyan-300 leading-none mb-0.5">Voice → EMR</div>
+            <div className="text-[10px] text-slate-500 group-hover:text-slate-400 transition-colors">Live dictation demo</div>
+          </div>
+          <div className="ml-auto">
+            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+          </div>
+        </button>
+      </div>
+       
       {/* Impact Metrics — pinned to bottom */}
       <div className="mx-3 mb-4 mt-2 p-3.5 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/5 border border-blue-500/20 flex-shrink-0">
         <div className="text-[9px] font-bold tracking-widest text-cyan-400 uppercase mb-3">

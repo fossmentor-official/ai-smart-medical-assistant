@@ -89,3 +89,11 @@ export const DEMO_CASES: { label: string; icon: string; sub: string; prompt: str
     prompt: "Generate ICD-10 and CPT codes for a patient with hypertension stage 2 with chronic kidney disease stage 3, receiving an office consultation."
   },
 ]
+
+export interface EMR {
+  patient_name: string;
+  symptoms: string[];
+  diagnosis: string;
+  medications: string[];
+  notes: string;
+}
