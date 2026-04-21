@@ -1,5 +1,6 @@
 import AppSidebar from "./AppSidebar"
 import type { Mode } from "../types/clinical"
+import type { User } from "../auth/AuthContext"
 
 interface Props {
   children:     React.ReactNode
@@ -8,10 +9,12 @@ interface Props {
   onDemoCase:   (prompt: string, mode: Mode) => void
   onDemoEMR:    () => void
   onLiveEMR:    () => void
+  user:         User | null
+  onLogout:     () => void
 }
 
 export default function AppLayout({
-  children, activeMode, onModeChange, onDemoCase, onDemoEMR, onLiveEMR,
+  children, activeMode, onModeChange, onDemoCase, onDemoEMR, onLiveEMR, user, onLogout,
 }: Props) {
   return (
     <div
@@ -43,6 +46,8 @@ export default function AppLayout({
           onDemoCase={onDemoCase}
           onDemoEMR={onDemoEMR}
           onLiveEMR={onLiveEMR}
+          user={user}
+          onLogout={onLogout}
         />
       </div>
 
