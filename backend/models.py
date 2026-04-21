@@ -7,7 +7,7 @@ from typing import Literal, Optional
 # ─────────────────────────────────────────────────────────────────────────────
 
 class ChatRequest(BaseModel):
-    message: str = Field(..., min_length=1, max_length=100)  # 100-char limit for free users
+    message: str = Field(..., min_length=1, max_length=500)  # 100-char limit for free users
     mode: Literal["clinical", "billing", "docs", "insights"] = "clinical"
 
 class ChatResponse(BaseModel):
