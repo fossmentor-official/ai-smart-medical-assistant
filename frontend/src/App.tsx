@@ -1,14 +1,18 @@
 // frontend/src/App.tsx
 import { useState } from "react"
-import AppLayout from "./layouts/AppLayout"
-import ChatBox from "./components/ChatBox"
-import VoiceEMR from "./components/VoiceEMR"
+import AppLayout   from "./layouts/AppLayout"
+import ChatBox     from "./components/ChatBox"
+import DemoVoiceEMR from "./components/DemoVoiceEMR"
+import LiveVoiceEMR from "./components/LiveVoiceEMR"
 import type { Mode } from "./types/clinical"
 
 export default function App() {
-  const [mode, setMode] = useState<Mode>("clinical")
+  const [mode, setMode]               = useState<Mode>("clinical")
   const [pendingPrompt, setPendingPrompt] = useState<{ text: string; mode: Mode } | null>(null)
-  const [voiceEMROpen, setVoiceEMROpen] = useState(false)
+
+  // Two separate modal states — completely independent
+  const [demoEMROpen, setDemoEMROpen] = useState(false)
+  const [liveEMROpen, setLiveEMROpen] = useState(false)
 
   const handleDemoCase = (prompt: string, demoMode: Mode) => {
     setMode(demoMode)
@@ -21,7 +25,8 @@ export default function App() {
         activeMode={mode}
         onModeChange={setMode}
         onDemoCase={handleDemoCase}
-        onVoiceEMR={() => setVoiceEMROpen(true)}
+        onDemoEMR={() => setDemoEMROpen(true)}
+        onLiveEMR={() => setLiveEMROpen(true)}
       >
         <ChatBox
           mode={mode}
@@ -30,7 +35,17 @@ export default function App() {
         />
       </AppLayout>
 
-      <VoiceEMR open={voiceEMROpen} onClose={() => setVoiceEMROpen(false)} />
+      {/* Demo Voice→EMR modal — simulated dictation, no mic, Gemini structures */}
+      <DemoVoiceEMR
+        open={demoEMROpen}
+        onClose={() => setDemoEMROpen(false)}
+      />
+
+      {/* Live Voice→EMR modal — real mic, Whisper STT, Gemini structures */}
+      <LiveVoiceEMR
+        open={liveEMROpen}
+        onClose={() => setLiveEMROpen(false)}
+      />
     </>
   )
 }

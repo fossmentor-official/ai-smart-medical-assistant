@@ -65,7 +65,7 @@ async def ask_gemini_stream(message: str, mode: str = "clinical"):
         response = await loop.run_in_executor(
             None,
             lambda: client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-2.5-flash-lite",
                 contents=full_prompt
             )
         )

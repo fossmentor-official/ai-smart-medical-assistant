@@ -1,16 +1,18 @@
-// frontend/src/layouts/AppLayout.tsx
 import AppSidebar from "./AppSidebar"
 import type { Mode } from "../types/clinical"
 
 interface Props {
-  children: React.ReactNode
-  activeMode: Mode
+  children:     React.ReactNode
+  activeMode:   Mode
   onModeChange: (m: Mode) => void
-  onDemoCase: (prompt: string, mode: Mode) => void
-  onVoiceEMR: () => void
+  onDemoCase:   (prompt: string, mode: Mode) => void
+  onDemoEMR:    () => void
+  onLiveEMR:    () => void
 }
 
-export default function AppLayout({ children, activeMode, onModeChange, onDemoCase, onVoiceEMR }: Props) {
+export default function AppLayout({
+  children, activeMode, onModeChange, onDemoCase, onDemoEMR, onLiveEMR,
+}: Props) {
   return (
     <div
       style={{
@@ -23,7 +25,7 @@ export default function AppLayout({ children, activeMode, onModeChange, onDemoCa
         left: 0,
       }}
     >
-      {/* Sidebar column — fixed 256px, never overlaps */}
+      {/* Sidebar — fixed 256px */}
       <div
         style={{
           width: "256px",
@@ -39,11 +41,12 @@ export default function AppLayout({ children, activeMode, onModeChange, onDemoCa
           activeMode={activeMode}
           onModeChange={onModeChange}
           onDemoCase={onDemoCase}
-          onVoiceEMR={onVoiceEMR}
+          onDemoEMR={onDemoEMR}
+          onLiveEMR={onLiveEMR}
         />
       </div>
 
-      {/* Main content column — fills remaining space */}
+      {/* Main content */}
       <div
         style={{
           flex: 1,

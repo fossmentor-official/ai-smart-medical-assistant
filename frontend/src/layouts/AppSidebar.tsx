@@ -1,11 +1,13 @@
 import type { Mode } from "../types/clinical"
 import { MODES, DEMO_CASES } from "../types/clinical"
+import { Sparkles, Mic } from "lucide-react"
 
 interface Props {
-  activeMode: Mode
+  activeMode:   Mode
   onModeChange: (m: Mode) => void
-  onDemoCase: (prompt: string, mode: Mode) => void
-  onVoiceEMR: () => void
+  onDemoCase:   (prompt: string, mode: Mode) => void
+  onDemoEMR:    () => void   // opens DemoVoiceEMR modal
+  onLiveEMR:    () => void   // opens LiveVoiceEMR modal
 }
 
 const modeRing: Record<string, string> = {
@@ -21,13 +23,15 @@ const modeText: Record<string, string> = {
   purple:  "text-purple-300",
 }
 
-export default function AppSidebar({ activeMode, onModeChange, onDemoCase, onVoiceEMR }: Props) {
+export default function AppSidebar({
+  activeMode, onModeChange, onDemoCase, onDemoEMR, onLiveEMR,
+}: Props) {
   return (
     <div
       style={{ display: "flex", flexDirection: "column", height: "100vh" }}
       className="bg-[#0d1625] text-slate-300 border-r border-white/10"
     >
-      {/* Logo — fixed at top */}
+      {/* ── Logo ── */}
       <div className="px-5 pt-5 pb-4 border-b border-white/10 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-lg shadow-lg shadow-blue-500/20">
@@ -40,7 +44,7 @@ export default function AppSidebar({ activeMode, onModeChange, onDemoCase, onVoi
         </div>
       </div>
 
-      {/* Scrollable middle section */}
+      {/* ── Scrollable middle ── */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
 
         {/* AI Modes */}
@@ -59,19 +63,11 @@ export default function AppSidebar({ activeMode, onModeChange, onDemoCase, onVoi
                     : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
                 }`}
               >
-                <span
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0 ${
-                    activeMode === m.id ? "bg-white/10" : "bg-white/5"
-                  }`}
-                >
+                <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0 ${activeMode === m.id ? "bg-white/10" : "bg-white/5"}`}>
                   {m.icon}
                 </span>
                 <div className="min-w-0">
-                  <div
-                    className={`text-[13px] font-medium leading-none mb-0.5 ${
-                      activeMode === m.id ? modeText[m.color] : ""
-                    }`}
-                  >
+                  <div className={`text-[13px] font-medium leading-none mb-0.5 ${activeMode === m.id ? modeText[m.color] : ""}`}>
                     {m.label}
                   </div>
                   <div className="text-[10px] text-slate-600 truncate">{m.desc}</div>
@@ -104,28 +100,49 @@ export default function AppSidebar({ activeMode, onModeChange, onDemoCase, onVoi
             ))}
           </div>
         </div>
+
+        {/* ── Voice EMR section header ── */}
+        <div className="px-3 pt-5 pb-2">
+          <div className="text-[9px] font-bold tracking-widest text-slate-600 uppercase mb-3 px-2">
+            Voice to EMR
+          </div>
+
+          {/* Button 1 — Demo (simulated) */}
+          <button
+            onClick={onDemoEMR}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-gradient-to-r from-violet-500/15 to-purple-600/15 border border-violet-500/25 hover:border-violet-400/50 hover:from-violet-500/25 hover:to-purple-600/25 transition-all group mb-2"
+          >
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center flex-shrink-0 shadow-md shadow-violet-500/25">
+              <Sparkles size={14} className="text-white" />
+            </div>
+            <div className="text-left min-w-0 flex-1">
+              <div className="text-[12px] font-bold text-violet-300 leading-none mb-0.5">Demo Dictation</div>
+              <div className="text-[10px] text-slate-600 group-hover:text-slate-400 transition-colors">Simulated · No mic needed</div>
+            </div>
+            <div className="text-[9px] font-bold text-violet-600 border border-violet-600/40 rounded-full px-1.5 py-0.5">
+              DEMO
+            </div>
+          </button>
+
+          {/* Button 2 — Live (real mic) */}
+          <button
+            onClick={onLiveEMR}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-gradient-to-r from-cyan-500/15 to-blue-600/15 border border-cyan-500/25 hover:border-cyan-400/50 hover:from-cyan-500/25 hover:to-blue-600/25 transition-all group"
+          >
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-md shadow-cyan-500/25">
+              <Mic size={14} className="text-white" />
+            </div>
+            <div className="text-left min-w-0 flex-1">
+              <div className="text-[12px] font-bold text-cyan-300 leading-none mb-0.5">Live Recording</div>
+              <div className="text-[10px] text-slate-600 group-hover:text-slate-400 transition-colors">Real mic · Whisper + Gemini</div>
+            </div>
+            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse flex-shrink-0" />
+          </button>
+        </div>
+
       </div>
 
-      {/* Voice EMR CTA */}
-      <div className="px-3 pb-3 flex-shrink-0">
-        <button
-          onClick={onVoiceEMR}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 hover:border-cyan-500/60 hover:from-cyan-500/30 hover:to-blue-600/30 transition-all group"
-        >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-md shadow-cyan-500/30">
-            <span className="text-base">🎤</span>
-          </div>
-          <div className="text-left min-w-0">
-            <div className="text-[12px] font-bold text-cyan-300 leading-none mb-0.5">Voice → EMR</div>
-            <div className="text-[10px] text-slate-500 group-hover:text-slate-400 transition-colors">Live dictation demo</div>
-          </div>
-          <div className="ml-auto">
-            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-          </div>
-        </button>
-      </div>
-       
-      {/* Impact Metrics — pinned to bottom */}
+      {/* ── Impact Metrics — pinned bottom ── */}
       <div className="mx-3 mb-4 mt-2 p-3.5 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/5 border border-blue-500/20 flex-shrink-0">
         <div className="text-[9px] font-bold tracking-widest text-cyan-400 uppercase mb-3">
           Impact Metrics
