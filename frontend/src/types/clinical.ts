@@ -1,4 +1,4 @@
-export type Mode = "clinical" | "billing" | "docs" | "insights"
+export type Mode = "clinical" | "billing" | "docs" | "insights" | "rcm"
 
 export interface Message {
   role: "user" | "ai"
@@ -57,6 +57,7 @@ export const MODES: { id: Mode; label: string; icon: string; desc: string; badge
   { id: "billing",   label: "Billing Assistant",  icon: "💰", desc: "ICD codes & claims",      badge: "BILLING",   color: "amber"  },
   { id: "docs",      label: "Documentation AI",   icon: "📄", desc: "Auto EMR notes",          badge: "DOCS",      color: "emerald"},
   { id: "insights",  label: "Clinic Insights",    icon: "📊", desc: "Analytics & trends",      badge: "INSIGHTS",  color: "purple" },
+  { id: "rcm", label: "Billing / RCM", icon: "💵", desc: "Revenue cycle automation", badge: "RCM", color: "emerald" },
 ]
 
 export const DEMO_CASES: { label: string; icon: string; sub: string; prompt: string; mode: Mode }[] = [

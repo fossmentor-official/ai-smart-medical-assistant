@@ -8,7 +8,7 @@ from typing import Literal, Optional
 
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=500)  # 100-char limit for free users
-    mode: Literal["clinical", "billing", "docs", "insights"] = "clinical"
+    mode: Literal["clinical", "billing", "docs", "insights", "rcm"] = "clinical"
 
 class ChatResponse(BaseModel):
     success: bool
@@ -68,3 +68,39 @@ class VoiceEMRResponse(BaseModel):
     risk:              RiskInfo
     follow_up:         str
     confidence:        int   # 0–100
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RCM / Billing Demo
+# ─────────────────────────────────────────────────────────────────────────────
+
+class RCMRequest(BaseModel):
+    """POST /api/billing/analyze"""
+    visit_description: str = Field(..., min_length=10, max_length=3000)
+    scenario_id:       str = Field(default="", max_length=100)
+
+class RCMCode(BaseModel):
+    code:        str
+    description: str
+    fee:         float   # standard fee in USD
+
+class RCMError(BaseModel):
+    severity:    Literal["critical", "warning", "info"]
+    code:        str
+    title:       str
+    detail:      str
+    fix:         str
+
+class RCMResponse(BaseModel):
+    visit_description:      str
+    scenario_id:            str
+    icd10_codes:            list[RCMCode]
+    cpt_codes:              list[RCMCode]
+    standard_fee:           float
+    estimated_reimbursement: float
+    net_collection:         float
+    denial_probability:     int      # 0-100
+    errors:                 list[RCMError]
+    optimization_tips:      list[str]
+    revenue_leakage:        float    # money left on table
+    summary:                str
+    confidence:             int      # 0-100

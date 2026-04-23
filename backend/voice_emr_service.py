@@ -1,7 +1,7 @@
 """
 voice_emr_service.py
 ────────────────────
-Takes a raw doctor-patient transcript and uses Gemini-2.5-flash to:
+Takes a raw doctor-patient transcript and uses gemini-2.5-flash-lite to:
   1. Identify speaker roles (doctor vs patient)
   2. Extract structured SOAP notes
   3. Suggest ICD-10 + CPT codes
@@ -65,7 +65,7 @@ Rules:
 
 async def structure_transcript_to_emr(transcript: str) -> dict:
     """
-    Send transcript to Gemini-2.5-flash → parse structured EMR JSON.
+    Send transcript to gemini-2.5-flash-lite → parse structured EMR JSON.
     Returns the parsed dict or raises on failure.
     """
     full_prompt = f"{VOICE_EMR_PROMPT}\n\nTranscript:\n{transcript}"
@@ -76,7 +76,7 @@ async def structure_transcript_to_emr(transcript: str) -> dict:
         response = await loop.run_in_executor(
             None,
             lambda: client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-2.5-flash-lite",
                 contents=full_prompt,
             ),
         )

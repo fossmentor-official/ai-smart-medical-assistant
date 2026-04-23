@@ -6,7 +6,7 @@
  *   1. Browser asks mic permission → MediaRecorder captures audio
  *   2. AudioContext + AnalyserNode drives a REAL frequency waveform
  *   3. On stop → send WebM blob to  POST /api/voice/transcribe  (Whisper)
- *   4. Show transcript → send to  POST /api/voice/generate-emr  (Gemini-2.5-flash)
+ *   4. Show transcript → send to  POST /api/voice/generate-emr  (gemini-2.5-flash-lite)
  *   5. Render beautiful structured EMR card with speaker timeline
  */
 
@@ -434,7 +434,7 @@ export default function LiveVoiceEMR({ open, onClose }: Props) {
               <div>
                 <div className="text-white font-bold text-[15px] leading-none">Live Voice → EMR</div>
                 <div className="text-[11px] text-slate-500 mt-0.5">
-                  Real microphone · Whisper STT · Gemini-2.5-flash structuring
+                  Real microphone · Whisper STT · gemini-2.5-flash-lite structuring
                 </div>
               </div>
             </div>
@@ -648,7 +648,7 @@ export default function LiveVoiceEMR({ open, onClose }: Props) {
                     {phase === "transcribing" ? "Transcribing Audio…" : "Generating EMR…"}
                   </div>
                   <div className="text-slate-400 text-sm">
-                    {phase === "transcribing" ? "Whisper is processing your recording" : "Gemini-2.5-flash is structuring the clinical data"}
+                    {phase === "transcribing" ? "Whisper is processing your recording" : "gemini-2.5-flash-lite is structuring the clinical data"}
                   </div>
                 </div>
 

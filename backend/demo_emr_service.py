@@ -2,7 +2,7 @@
 demo_emr_service.py
 ────────────────────
 Structures a pre-written (simulated) doctor dictation text into a
-full EMR JSON using Gemini-2.5-flash.
+full EMR JSON using gemini-2.5-flash-lite.
 
 Used by the Demo Voice-to-EMR feature (no real microphone).
 The Live Voice-to-EMR feature uses voice_emr_service.py instead.
@@ -65,7 +65,7 @@ async def structure_demo_dictation(dictation: str) -> dict:
         response = await loop.run_in_executor(
             None,
             lambda: client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-2.5-flash-lite",
                 contents=full_prompt,
             ),
         )

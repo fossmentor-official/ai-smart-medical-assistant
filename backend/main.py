@@ -14,6 +14,8 @@ from whisper_service import transcribe_audio
 from voice_emr_service import structure_transcript_to_emr
 from demo_emr_service import structure_demo_dictation
 from config import ALLOWED_ORIGINS
+from models import ChatRequest, TranscriptRequest, DemoEMRRequest, RCMRequest
+from rcm_service import analyze_rcm
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -73,7 +75,7 @@ async def chat(request: Request, req: ChatRequest):
 async def demo_generate_emr(request: Request, req: DemoEMRRequest):
     """
     Demo feature: accepts a pre-written doctor dictation string,
-    sends it to Gemini-2.5-flash, returns structured EMR JSON.
+    sends it to gemini-2.5-flash-lite, returns structured EMR JSON.
     No audio/microphone involved.
     """
     logger.info("Demo EMR request — dictation length=%d", len(req.dictation))
@@ -142,7 +144,7 @@ async def transcribe(request: Request, audio: UploadFile = File(...)):
 async def live_generate_emr(request: Request, req: TranscriptRequest):
     """
     Step 2 — Live pipeline.
-    Takes Whisper transcript, sends to Gemini-2.5-flash,
+    Takes Whisper transcript, sends to gemini-2.5-flash-lite,
     returns fully structured EMR with speaker diarization.
     """
     logger.info("Live EMR gen — transcript length=%d", len(req.transcript))
@@ -155,3 +157,27 @@ async def live_generate_emr(request: Request, req: TranscriptRequest):
     except Exception as e:
         logger.error("Live EMR failed: %s", e)
         raise HTTPException(status_code=500, detail=f"EMR generation failed: {str(e)}")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RCM / Billing Intelligence  (POST /api/billing/analyze)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.post("/api/billing/analyze")
+@limiter.limit("15/minute")
+async def billing_analyze(request: Request, req: RCMRequest):
+    """
+    Full RCM analysis: ICD-10 + CPT coding, fee estimation,
+    claim error detection, denial probability, revenue leakage.
+    """
+    logger.info("RCM analyze — description length=%d", len(req.visit_description))
+    try:
+        result = await analyze_rcm(req.visit_description)
+        result["visit_description"] = req.visit_description
+        result["scenario_id"] = req.scenario_id
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        logger.error("RCM analysis failed: %s", e)
+        raise HTTPException(status_code=500, detail=f"RCM analysis failed: {str(e)}")

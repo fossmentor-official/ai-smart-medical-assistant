@@ -220,7 +220,7 @@ export default function DemoVoiceEMR({ open, onClose }: Props) {
               </div>
               <div>
                 <div className="text-white font-bold text-[15px] leading-none">Demo Voice → EMR</div>
-                <div className="text-[11px] text-slate-500 mt-0.5">Simulated dictation · Gemini-2.5-flash structuring · No microphone</div>
+                <div className="text-[11px] text-slate-500 mt-0.5">Simulated dictation · gemini-2.5-flash-lite structuring · No microphone</div>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -334,7 +334,7 @@ export default function DemoVoiceEMR({ open, onClose }: Props) {
                 </div>
                 <div className="text-center">
                   <div className="text-white font-bold text-lg mb-1">Generating EMR…</div>
-                  <div className="text-slate-500 text-sm">Gemini-2.5-flash is structuring the clinical data</div>
+                  <div className="text-slate-500 text-sm">gemini-2.5-flash-lite is structuring the clinical data</div>
                 </div>
                 <div className="w-full max-w-sm space-y-2">
                   {GEN_STEPS.map((step, i) => (

@@ -3,7 +3,53 @@ import type { Mode } from "../types/clinical"
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Core chat stream
+// 🔥 Shared fetch with retry + timeout
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  retries = 3,
+  timeout = 15000
+): Promise<Response> {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    const controller = new AbortController()
+    const id = setTimeout(() => controller.abort(), timeout)
+
+    try {
+      const res = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      })
+
+      clearTimeout(id)
+
+      if (res.ok) return res
+
+      // Retry only on server errors (5xx)
+      if (res.status >= 500 && attempt < retries - 1) {
+        await new Promise((r) => setTimeout(r, 2 ** attempt * 1000))
+        continue
+      }
+
+      return res
+    } catch (err) {
+      clearTimeout(id)
+
+      if (attempt < retries - 1) {
+        await new Promise((r) => setTimeout(r, 2 ** attempt * 1000))
+        continue
+      }
+
+      throw err
+    }
+  }
+
+  throw new Error("Request failed after retries")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Core chat stream (SSE)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function streamMessage(
@@ -11,77 +57,88 @@ export async function streamMessage(
   mode: Mode,
   onChunk: (chunk: string) => void
 ): Promise<void> {
-  const res = await fetch(`${API_URL}/api/chat`, {
+  const res = await fetchWithRetry(`${API_URL}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message, mode }),
   })
+
   if (!res.ok) throw new Error(`API error: ${res.status}`)
 
   const reader = res.body?.getReader()
   const decoder = new TextDecoder()
-  if (!reader) return
+
+  if (!reader) throw new Error("Streaming not supported")
+
+  let buffer = ""
 
   while (true) {
     const { done, value } = await reader.read()
     if (done) break
-    const lines = decoder.decode(value).split("\n")
+
+    buffer += decoder.decode(value, { stream: true })
+
+    const lines = buffer.split("\n")
+    buffer = lines.pop() || ""
+
     for (const line of lines) {
       if (!line.startsWith("data: ")) continue
+
       const data = line.slice(6).trim()
+
       if (data === "[DONE]") return
+
       try {
         const parsed = JSON.parse(data)
-        if (parsed.text)  onChunk(parsed.text)
+        if (parsed.text) onChunk(parsed.text)
         if (parsed.error) throw new Error(parsed.error)
-      } catch {}
+      } catch {
+        // ignore partial JSON
+      }
     }
   }
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────────
-// Shared EMR types  (used by both Demo and Live components)
+// Shared EMR types
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface EMRSoap {
   subjective: string
-  objective:  string
+  objective: string
   assessment: string
-  plan:       string
+  plan: string
 }
 
 export interface EMRCode {
-  code:        string
+  code: string
   description: string
 }
 
 export interface EMRRisk {
-  level:     "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
-  score:     number
+  level: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+  score: number
   rationale: string
 }
 
-/** Shared shape returned by BOTH /api/demo/generate-emr and /api/voice/generate-emr */
 export interface StructuredEMR {
-  chief_complaint:   string
-  soap:              EMRSoap
-  icd10:             EMRCode[]
-  cpt:               EMRCode[]
-  medications:       string[]
+  chief_complaint: string
+  soap: EMRSoap
+  icd10: EMRCode[]
+  cpt: EMRCode[]
+  medications: string[]
   recommended_tests: string[]
-  risk:              EMRRisk
-  follow_up:         string
-  confidence:        number
+  risk: EMRRisk
+  follow_up: string
+  confidence: number
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DEMO Voice-to-EMR API  (POST /api/demo/generate-emr)
-// No microphone — sends pre-written dictation text to Gemini
+// DEMO EMR
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface DemoEMRResult extends StructuredEMR {
-  dictation:   string   // echoed back by backend
+  dictation: string
   scenario_id: string
 }
 
@@ -89,22 +146,22 @@ export async function generateEMRFromDemoScript(
   dictation: string,
   scenarioId: string
 ): Promise<DemoEMRResult> {
-  const res = await fetch(`${API_URL}/api/demo/generate-emr`, {
+  const res = await fetchWithRetry(`${API_URL}/api/demo/generate-emr`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ dictation, scenario_id: scenarioId }),
   })
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "Demo EMR failed" }))
     throw new Error(err.detail ?? `Error ${res.status}`)
   }
+
   return res.json()
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────────
-// LIVE Voice-to-EMR API  (POST /api/voice/transcribe + /api/voice/generate-emr)
-// Real microphone → Whisper → Gemini
+// LIVE Voice APIs
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface Speaker {
@@ -113,11 +170,10 @@ export interface Speaker {
 }
 
 export interface LiveEMRResult extends StructuredEMR {
-  transcript: string      // full raw transcript
-  speakers:   Speaker[]   // diarized turns
+  transcript: string
+  speakers: Speaker[]
 }
 
-/** Step 1: send audio blob to Whisper */
 export async function transcribeAudio(
   audioBlob: Blob,
   filename = "recording.webm"
@@ -125,30 +181,122 @@ export async function transcribeAudio(
   const form = new FormData()
   form.append("audio", audioBlob, filename)
 
-  const res = await fetch(`${API_URL}/api/voice/transcribe`, {
+  const res = await fetchWithRetry(`${API_URL}/api/voice/transcribe`, {
     method: "POST",
     body: form,
   })
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "Transcription failed" }))
     throw new Error(err.detail ?? `Transcription error ${res.status}`)
   }
+
   const data = await res.json()
   return { transcript: data.transcript, language: data.language }
 }
 
-/** Step 2: send transcript text to Gemini for EMR structuring */
 export async function generateEMRFromTranscript(
   transcript: string
 ): Promise<LiveEMRResult> {
-  const res = await fetch(`${API_URL}/api/voice/generate-emr`, {
+  const res = await fetchWithRetry(`${API_URL}/api/voice/generate-emr`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ transcript }),
   })
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "EMR generation failed" }))
     throw new Error(err.detail ?? `EMR error ${res.status}`)
   }
+
   return res.json()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RCM / Billing Intelligence (🔥 upgraded resilience)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface RCMCode {
+  code: string
+  description: string
+  fee: number
+}
+
+export interface RCMError {
+  severity: "critical" | "warning" | "info"
+  code: string
+  title: string
+  detail: string
+  fix: string
+}
+
+export interface RCMResult {
+  visit_description: string
+  scenario_id: string
+  icd10_codes: RCMCode[]
+  cpt_codes: RCMCode[]
+  standard_fee: number
+  estimated_reimbursement: number
+  net_collection: number
+  denial_probability: number
+  errors: RCMError[]
+  optimization_tips: string[]
+  revenue_leakage: number
+  summary: string
+  confidence: number
+}
+
+// 🔥 fallback response (never break UI)
+function fallbackRCM(visitDescription: string): RCMResult {
+  return {
+    visit_description: visitDescription,
+    scenario_id: "fallback",
+    icd10_codes: [],
+    cpt_codes: [
+      { code: "99213", description: "Consultation", fee: 70 },
+    ],
+    standard_fee: 70,
+    estimated_reimbursement: 60,
+    net_collection: 55,
+    denial_probability: 0.35,
+    errors: [
+      {
+        severity: "warning",
+        code: "AI_FALLBACK",
+        title: "AI temporarily unavailable",
+        detail: "Showing estimated billing",
+        fix: "Retry for full analysis",
+      },
+    ],
+    optimization_tips: ["Retry AI analysis for accuracy"],
+    revenue_leakage: 20,
+    summary: "Fallback estimation due to AI load",
+    confidence: 0.6,
+  }
+}
+
+export async function analyzeRCM(
+  visitDescription: string,
+  scenarioId = ""
+): Promise<RCMResult> {
+  try {
+    const res = await fetchWithRetry(`${API_URL}/api/billing/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        visit_description: visitDescription,
+        scenario_id: scenarioId,
+      }),
+    })
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail ?? `Error ${res.status}`)
+    }
+
+    return res.json()
+  } catch (err) {
+    console.warn("RCM fallback triggered:", err)
+    return fallbackRCM(visitDescription)
+  }
 }
