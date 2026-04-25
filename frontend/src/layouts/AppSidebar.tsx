@@ -6,7 +6,8 @@
 import type { Mode } from "../types/clinical"
 import type { User } from "../auth/AuthContext"
 import { MODES, DEMO_CASES } from "../types/clinical"
-import { Sparkles, Mic, LogOut } from "lucide-react"
+import { Sparkles, Mic, LogOut, BarChart2, CalendarDays, FlaskConical } from "lucide-react"  // ← NEW: FlaskConical
+import type { AppView } from "../types/appView"
 
 interface Props {
   activeMode:   Mode
@@ -16,6 +17,9 @@ interface Props {
   onLiveEMR:    () => void
   user:         User | null
   onLogout:     () => void
+  onNavigate:   (view: AppView) => void   // ← NEW
+  activeView:   AppView                   // ← NEW
+  onBookDemo:   () => void    // ← NEW
 }
 
 const modeRing: Record<string, string> = {
@@ -60,7 +64,7 @@ function providerIcon(provider: User["provider"]) {
 }
 
 export default function AppSidebar({
-  activeMode, onModeChange, onDemoCase, onDemoEMR, onLiveEMR, user, onLogout,
+  activeMode, onModeChange, onDemoCase, onDemoEMR, onLiveEMR, user, onLogout, onNavigate, activeView,  onBookDemo, 
 }: Props) {
   return (
     <div
@@ -82,6 +86,71 @@ export default function AppSidebar({
 
       {/* ── Scrollable middle ── */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
+
+        {/* ── NEW: Analytics section with AI Insights ──────────────────────── */}
+        <div className="px-3 pt-4 pb-1">
+          <div className="text-[9px] font-bold tracking-widest text-slate-600 uppercase mb-2 px-2">
+            Analytics
+          </div>
+
+          {/* AI Insights */}
+          <button
+            onClick={() => onNavigate("insights")}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 ${
+              activeView === "insights"
+                ? "ring-1 ring-emerald-400/40 bg-emerald-500/10 text-white"
+                : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+            }`}
+          >
+            <span className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+              activeView === "insights" ? "bg-white/10" : "bg-white/5"
+            }`}>
+              <BarChart2
+                size={15}
+                className={activeView === "insights" ? "text-emerald-400" : "text-slate-500"}
+              />
+            </span>
+            <div className="min-w-0">
+              <div className={`text-[13px] font-medium leading-none mb-0.5 ${
+                activeView === "insights" ? "text-emerald-300" : ""
+              }`}>
+                AI Insights
+              </div>
+              <div className="text-[10px] text-slate-600 truncate">Trends · Revenue · No-shows</div>
+            </div>
+            {activeView === "insights" && (
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0 ml-auto" />
+            )}
+          </button>
+
+          {/* ── NEW: Use-Case Simulator ── */}
+          <button
+              onClick={() => onNavigate("simulator")}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 ${
+                activeView === "simulator"
+                  ? "ring-1 ring-violet-400/40 bg-violet-500/10 text-white"
+                  : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+              }`}
+            >
+              <span className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${activeView === "simulator" ? "bg-white/10" : "bg-white/5"}`}>
+                <FlaskConical size={15} className={activeView === "simulator" ? "text-violet-400" : "text-slate-500"} />
+              </span>
+              <div className="min-w-0">
+                <div className={`text-[13px] font-medium leading-none mb-0.5 ${activeView === "simulator" ? "text-violet-300" : ""}`}>
+                  Workflow Simulator
+                </div>
+                <div className="text-[10px] text-slate-600 truncate">See AI work for your team</div>
+              </div>
+              {activeView === "simulator" ? (
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-400 flex-shrink-0 ml-auto" />
+              ) : (
+                <div className="text-[8px] font-bold text-violet-600 border border-violet-600/40 rounded-full px-1.5 py-0.5 ml-auto flex-shrink-0">
+                  NEW
+                </div>
+              )}
+          </button>
+        </div>
+        {/* ── END NEW ─────────────────────────────────────────────────────── */}
 
         {/* AI Modes */}
         <div className="px-3 pt-4 pb-2">
@@ -195,6 +264,31 @@ export default function AppSidebar({
             ))}
           </div>
         </div>
+
+        {/* ── NEW: Book a Demo CTA ───────────────────────────────────────────── */}
+          <div className="px-3 pb-4">
+            <button
+              onClick={onBookDemo}
+              className="w-full flex items-center gap-3 px-3 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border border-cyan-400/30 hover:border-cyan-400/60 hover:from-cyan-500/30 hover:to-blue-600/30 transition-all group"
+            >
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center flex-shrink-0 shadow-md shadow-cyan-500/30">
+                <CalendarDays size={14} className="text-white" />
+              </div>
+              <div className="text-left min-w-0 flex-1">
+                <div className="text-[12px] font-bold text-cyan-300 leading-none mb-0.5 group-hover:text-cyan-200 transition-colors">
+                  Book a Demo
+                </div>
+                <div className="text-[10px] text-slate-600 group-hover:text-slate-400 transition-colors">
+                  AI picks your plan · 60 sec
+                </div>
+              </div>
+              <div className="text-[9px] font-bold text-cyan-500 border border-cyan-500/40 rounded-full px-1.5 py-0.5 group-hover:border-cyan-400/60 transition-colors">
+                NEW
+              </div>
+            </button>
+          </div>
+        {/* ── END NEW ─────────────────────────────────────────────────────── */}
+
       </div>
 
       {/* ── User panel — pinned bottom ── */}

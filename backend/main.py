@@ -16,6 +16,9 @@ from demo_emr_service import structure_demo_dictation
 from config import ALLOWED_ORIGINS
 from models import ChatRequest, TranscriptRequest, DemoEMRRequest, RCMRequest
 from rcm_service import analyze_rcm
+from insights_service import insights_router          
+from booking_service import booking_router            
+from simulator_service import simulator_router          # ← NEW
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -31,6 +34,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(insights_router)
+app.include_router(booking_router)
+app.include_router(simulator_router)                    # ← NEW
 
 
 @app.exception_handler(RateLimitExceeded)

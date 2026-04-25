@@ -55,6 +55,14 @@ Return ONLY the JSON. No markdown, no explanation.""",
 }"""
 }
 
+_client = None
+
+def get_gemini_client():
+    global _client
+    if _client is None:
+        _client = genai.Client(api_key=GEMINI_API_KEY)
+    return _client
+    
 async def ask_gemini_stream(message: str, mode: str = "clinical"):
     prompt = PROMPTS.get(mode, PROMPTS["clinical"])
     full_prompt = f"{prompt}\n\nUser input: {message}"

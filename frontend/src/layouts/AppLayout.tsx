@@ -1,20 +1,35 @@
 import AppSidebar from "./AppSidebar"
+import type { ReactNode } from "react"
 import type { Mode } from "../types/clinical"
 import type { User } from "../auth/AuthContext"
+import type { AppView } from "../types/appView"
 
 interface Props {
-  children:     React.ReactNode
+  children:     ReactNode
   activeMode:   Mode
   onModeChange: (m: Mode) => void
   onDemoCase:   (prompt: string, mode: Mode) => void
   onDemoEMR:    () => void
   onLiveEMR:    () => void
+  onBookDemo:   () => void
   user:         User | null
   onLogout:     () => void
+  onNavigate:   (view: AppView) => void
+  activeView:   AppView
 }
 
 export default function AppLayout({
-  children, activeMode, onModeChange, onDemoCase, onDemoEMR, onLiveEMR, user, onLogout,
+  children,
+  activeMode,
+  onModeChange,
+  onDemoCase,
+  onDemoEMR,
+  onLiveEMR,
+  onBookDemo,
+  user,
+  onLogout,
+  onNavigate,
+  activeView,
 }: Props) {
   return (
     <div
@@ -46,8 +61,11 @@ export default function AppLayout({
           onDemoCase={onDemoCase}
           onDemoEMR={onDemoEMR}
           onLiveEMR={onLiveEMR}
+          onBookDemo={onBookDemo}
           user={user}
           onLogout={onLogout}
+          onNavigate={onNavigate}
+          activeView={activeView}
         />
       </div>
 
